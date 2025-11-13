@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ماشین حساب گام‌به‌گام امن</title>
+<title>ماشین حساب گام‌به‌گام ساده</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js"></script>
 <style>
 body {
@@ -50,22 +50,10 @@ button:hover { background-color: #2563eb; }
 </head>
 <body>
 
-<h1>🧮 ماشین حساب گام‌به‌گام امن (Math.js)</h1>
+<h1>🧮 ماشین حساب گام‌به‌گام ساده</h1>
 
-<label for="calcType">نوع محاسبه:</label>
-<select id="calcType">
-    <option value="limit">حد</option>
-    <option value="derivative">مشتق</option>
-    <option value="integral">انتگرال ساده</option>
-</select>
+<input type="text" id="question" placeholder="مثال: 2^3 + sqrt(16) - 5">
 <br>
-
-<input type="text" id="question" placeholder="مثال: sin(x) + x^2">
-<br>
-
-<input type="text" id="limitPoint" placeholder="نقطه حد (برای حد، مثال: 0)">
-<br>
-
 <button id="startButton">شروع گام‌به‌گام</button>
 <button id="nextButton" style="display:none;">مرحله بعد ➜</button>
 
@@ -75,6 +63,7 @@ button:hover { background-color: #2563eb; }
 let steps = [];
 let currentStep = 0;
 
+// بررسی تعادل پرانتزها
 function isBalanced(expr) {
     let stack = [];
     for (let ch of expr) {
@@ -87,65 +76,35 @@ function isBalanced(expr) {
     return stack.length === 0;
 }
 
+// آماده‌سازی مراحل
 function prepareSteps() {
     const exprInput = document.getElementById('question').value.trim();
-    const calcType = document.getElementById('calcType').value;
-    const limitPoint = document.getElementById('limitPoint').value.trim();
     steps = [];
     currentStep = 0;
 
     if (!exprInput) {
-        steps.push('❗ لطفاً ابتدا تابع خود را وارد کنید.');
+        steps.push('❗ لطفاً ابتدا یک عبارت ریاضی وارد کنید.');
         return;
     }
 
     if (!isBalanced(exprInput)) {
-        steps.push('❗ پرانتزهای تابع نامتعادل هستند.');
+        steps.push('❗ پرانتزهای عبارت نامتعادل هستند.');
         return;
     }
 
     try {
-        if (calcType === 'derivative') {
-            steps.push(تابع داده شده: ${exprInput});
-            steps.push('🔹 مرحله ۱: شناسایی تابع و متغیر x');
-            const derivative = math.derivative(exprInput, 'x').toString();
-            steps.push(🔹 مرحله ۲: نتیجه مشتق: ${derivative});
-
-        } else if (calcType === 'integral') {
-            steps.push(تابع داده شده: ${exprInput});
-            steps.push('🔹 مرحله ۱: انتگرال ساده (نمادین محدود به جمع و توان)');
-            steps.push('🔹 مرحله ۲: اضافه کردن ثابت C');
-            // انتگرال عددی ساده با math.js (نمادین محدود)
-            try {
-                const integralVal = math.integral ? math.integral(exprInput, 'x').toString() : '∫(' + exprInput + ') dx';
-                steps.push(🔹 نتیجه نهایی: ${integralVal} + C);
-            } catch {
-                steps.push('⚠️ انتگرال نمادین برای این تابع پشتیبانی نمی‌شود.');
-            }
-
-        } else if (calcType === 'limit') {
-            if (limitPoint === '') {
-                steps.push('❗ لطفاً نقطه حد را وارد کنید.');
-            } else {
-                const xVal = parseFloat(limitPoint);
-                if (isNaN(xVal)) {
-                    steps.push('❗ مقدار نقطه حد معتبر نیست!');
-
-Amirali, [11/13/2025 10:01 PM]
-return;
-                }
-                steps.push(تابع داده شده: ${exprInput});
-                steps.push(🔹 مرحله ۱: جایگذاری x = ${xVal});
-                const f = math.compile(exprInput);
-                const value = f.evaluate({x: xVal});
-                steps.push(🔹 مرحله ۲: نتیجه نهایی حد ≈ ${value});
-            }
-        }
-    } catch {
-        steps.push('⚠️ خطا در محاسبه. لطفاً تابع معتبر وارد کنید.');
+        steps.push(عبارت وارد شده: ${exprInput});
+        steps.push('🔹 مرحله ۱: بررسی عملیات‌ها و توابع موجود');
+        const expr = math.parse(exprInput);
+        steps.push(🔹 مرحله ۲: نمایش ساختار داخلی عبارت: ${expr.toString()});
+        const value = expr.evaluate();
+        steps.push(🔹 مرحله ۳: محاسبه مقدار نهایی: ${value});
+    } catch (err) {
+        steps.push('⚠️ خطا در محاسبه. لطفاً عبارت معتبر وارد کنید.');
     }
 }
 
+// نمایش مرحله بعد
 function showNextStep() {
     if (currentStep < steps.length) {
         const stepsDiv = document.getElementById('steps');
@@ -175,6 +134,4 @@ document.getElementById('nextButton').addEventListener('click', showNextStep);
 
 </body>
 </html>
-
-
 

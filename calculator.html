@@ -76,7 +76,7 @@ button:hover { background-color: #2563eb; }
 let steps = [];
 let currentStep = 0;
 
-// تابع برای بررسی تعادل پرانتزها
+// تابع بررسی تعادل پرانتزها
 function isBalanced(expr) {
     let stack = [];
     for (let ch of expr) {
@@ -101,46 +101,44 @@ function prepareSteps() {
         return;
     }
 
-    // پاکسازی کوتیشن‌ها و کاراکترهای خطرناک
-    const safeExpr = exprInput.replace(/["'\\]/g, '');
-
-    // بررسی تعادل پرانتزها
-    if (!isBalanced(safeExpr)) {
+    // چک تعادل پرانتزها
+    if (!isBalanced(exprInput)) {
         steps.push('❗ پرانتزهای تابع نامتعادل هستند.');
         return;
     }
 
     try {
         if (calcType === 'derivative') {
-            steps.push(تابع داده شده: ${safeExpr});
+            steps.push(تابع داده شده: ${exprInput});
             steps.push('🔹 مرحله ۱: شناسایی تابع و متغیر مستقل x');
-            const derived = Algebrite.run(d("${safeExpr}", x));
+            // استفاده از JSON.stringify برای امن کردن ورودی
+            const derived = Algebrite.eval("d(" + JSON.stringify(exprInput) + ", x)");
             steps.push('🔹 مرحله ۲: اعمال قواعد مشتق‌گیری (قانون توان، جمع، زنجیره‌ای و غیره)');
             steps.push(🔹 مرحله ۳: نتیجه نهایی مشتق: ${derived});
 
         } else if (calcType === 'integral') {
-            steps.push(تابع داده شده: ${safeExpr});
+            steps.push(تابع داده شده: ${exprInput});
             steps.push('🔹 مرحله ۱: شناسایی تابع برای انتگرال‌گیری');
-            const integral = Algebrite.run(integral("${safeExpr}", x));
+            const integral = Algebrite.eval("integral(" + JSON.stringify(exprInput) + ", x)");
             steps.push('🔹 مرحله ۲: اعمال قوانین انتگرال‌گیری (نمادین)');
             steps.push('🔹 مرحله ۳: اضافه کردن ثابت C');
-            steps.push(🔹 نتیجه نهایی انتگرال: ${integral} + C`);
+            steps.push(🔹 نتیجه نهایی انتگرال: ${integral} + C);
 
         } else if (calcType === 'limit') {
             if (limitPoint === '') {
+                steps.push('❗ لطفاً نقطه حد را وارد کنید.');
 
-Amirali, [11/13/2025 9:49 PM]
-steps.push('❗ لطفاً نقطه حد را وارد کنید.');
-            } else {
+Amirali, [11/13/2025 9:56 PM]
+} else {
                 const xVal = parseFloat(limitPoint);
                 if (isNaN(xVal)) {
                     steps.push('❗ مقدار نقطه حد معتبر نیست!');
                     return;
                 }
-                steps.push(تابع داده شده: ${safeExpr});
+                steps.push(تابع داده شده: ${exprInput});
                 steps.push(🔹 مرحله ۱: تعیین نقطه حد → x → ${xVal});
                 steps.push('🔹 مرحله ۲: بررسی وجود حد چپ و راست (نمونه ساده)');
-                const expr = math.parse(safeExpr).compile();
+                const expr = math.parse(exprInput).compile();
                 const value = expr.evaluate({x: xVal});
                 steps.push(🔹 مرحله ۳: جایگذاری مقدار x = ${xVal});
                 steps.push(🔹 مرحله ۴: نتیجه نهایی حد = ${value});
@@ -180,6 +178,5 @@ document.getElementById('nextButton').addEventListener('click', showNextStep);
 
 </body>
 </html>
-
 
 

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ماشین حساب گام‌به‌گام ساده</title>
+<title>ماشین حساب گام‌به‌گام عددی</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js"></script>
 <style>
 body {
@@ -13,7 +13,7 @@ body {
     padding: 40px;
 }
 h1 { color: #222; margin-bottom: 20px; }
-select, input, button {
+input, button {
     padding: 10px;
     margin: 8px;
     font-size: 16px;
@@ -50,7 +50,7 @@ button:hover { background-color: #2563eb; }
 </head>
 <body>
 
-<h1>🧮 ماشین حساب گام‌به‌گام ساده</h1>
+<h1>🧮 ماشین حساب گام‌به‌گام عددی</h1>
 
 <input type="text" id="question" placeholder="مثال: 2^3 + sqrt(16) - 5">
 <br>
@@ -73,7 +73,7 @@ function isBalanced(expr) {
             stack.pop();
         }
     }
-    return stack.length === 0;
+    return true;
 }
 
 // آماده‌سازی مراحل
@@ -83,7 +83,7 @@ function prepareSteps() {
     currentStep = 0;
 
     if (!exprInput) {
-        steps.push('❗ لطفاً ابتدا یک عبارت ریاضی وارد کنید.');
+        steps.push('❗ لطفاً ابتدا یک عبارت عددی وارد کنید.');
         return;
     }
 
@@ -94,13 +94,13 @@ function prepareSteps() {
 
     try {
         steps.push(عبارت وارد شده: ${exprInput});
-        steps.push('🔹 مرحله ۱: بررسی عملیات‌ها و توابع موجود');
+        steps.push('🔹 مرحله ۱: بررسی عملیات موجود (جمع، تفریق، ضرب، تقسیم، توان، رادیکال و توابع ساده)');
         const expr = math.parse(exprInput);
         steps.push(🔹 مرحله ۲: نمایش ساختار داخلی عبارت: ${expr.toString()});
         const value = expr.evaluate();
         steps.push(🔹 مرحله ۳: محاسبه مقدار نهایی: ${value});
-    } catch (err) {
-        steps.push('⚠️ خطا در محاسبه. لطفاً عبارت معتبر وارد کنید.');
+    } catch {
+        steps.push('⚠️ خطا در محاسبه. لطفاً فقط عبارات عددی معتبر وارد کنید.');
     }
 }
 
@@ -134,4 +134,3 @@ document.getElementById('nextButton').addEventListener('click', showNextStep);
 
 </body>
 </html>
-

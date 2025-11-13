@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ماشین حساب گام‌به‌گام عددی</title>
+<title>ماشین حساب گام‌به‌گام امن</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js"></script>
 <style>
 body {
@@ -50,7 +50,7 @@ button:hover { background-color: #2563eb; }
 </head>
 <body>
 
-<h1>🧮 ماشین حساب گام‌به‌گام عددی</h1>
+<h1>🧮 ماشین حساب گام‌به‌گام امن</h1>
 
 <input type="text" id="question" placeholder="مثال: 2^3 + sqrt(16) - 5">
 <br>
@@ -63,7 +63,7 @@ button:hover { background-color: #2563eb; }
 let steps = [];
 let currentStep = 0;
 
-// بررسی تعادل پرانتزها
+// بررسی پرانتزهای متعادل
 function isBalanced(expr) {
     let stack = [];
     for (let ch of expr) {
@@ -78,15 +78,19 @@ function isBalanced(expr) {
 
 // آماده‌سازی مراحل
 function prepareSteps() {
-    const exprInput = document.getElementById('question').value.trim();
     steps = [];
     currentStep = 0;
 
-    if (!exprInput) {
+    let exprInput = document.getElementById('question').value.trim();
+
+    if (exprInput === "") {
         steps.push('❗ لطفاً ابتدا یک عبارت عددی وارد کنید.');
         return;
     }
 
+    // فیلتر کردن کاراکترهای غیرمجاز
+    exprInput = exprInput.replace(/[^0-9+\-*/^()., sqrtlnsincostanexp]/gi, '');
+    
     if (!isBalanced(exprInput)) {
         steps.push('❗ پرانتزهای عبارت نامتعادل هستند.');
         return;
@@ -134,3 +138,4 @@ document.getElementById('nextButton').addEventListener('click', showNextStep);
 
 </body>
 </html>
+

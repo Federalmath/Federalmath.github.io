@@ -76,6 +76,19 @@ button:hover { background-color: #2563eb; }
 let steps = [];
 let currentStep = 0;
 
+// تابع برای بررسی تعادل پرانتزها
+function isBalanced(expr) {
+    let stack = [];
+    for (let ch of expr) {
+        if (ch === '(') stack.push(ch);
+        else if (ch === ')') {
+            if (stack.length === 0) return false;
+            stack.pop();
+        }
+    }
+    return stack.length === 0;
+}
+
 function prepareSteps() {
     const exprInput = document.getElementById('question').value.trim();
     const calcType = document.getElementById('calcType').value;
@@ -88,8 +101,14 @@ function prepareSteps() {
         return;
     }
 
-    // پاکسازی کاراکترهای مشکل‌ساز
+    // پاکسازی کوتیشن‌ها و کاراکترهای خطرناک
     const safeExpr = exprInput.replace(/["'\\]/g, '');
+
+    // بررسی تعادل پرانتزها
+    if (!isBalanced(safeExpr)) {
+        steps.push('❗ پرانتزهای تابع نامتعادل هستند.');
+        return;
+    }
 
     try {
         if (calcType === 'derivative') {
@@ -105,11 +124,13 @@ function prepareSteps() {
             const integral = Algebrite.run(integral("${safeExpr}", x));
             steps.push('🔹 مرحله ۲: اعمال قوانین انتگرال‌گیری (نمادین)');
             steps.push('🔹 مرحله ۳: اضافه کردن ثابت C');
-            steps.push(🔹 نتیجه نهایی انتگرال: ${integral} + C);
+            steps.push(🔹 نتیجه نهایی انتگرال: ${integral} + C`);
 
         } else if (calcType === 'limit') {
             if (limitPoint === '') {
-                steps.push('❗ لطفاً نقطه حد را وارد کنید.');
+
+Amirali, [11/13/2025 9:49 PM]
+steps.push('❗ لطفاً نقطه حد را وارد کنید.');
             } else {
                 const xVal = parseFloat(limitPoint);
                 if (isNaN(xVal)) {
@@ -117,11 +138,9 @@ function prepareSteps() {
                     return;
                 }
                 steps.push(تابع داده شده: ${safeExpr});
-                steps.push(🔹 مرحله ۱: تعیین نقطه حد → x → ${xVal}`);
+                steps.push(🔹 مرحله ۱: تعیین نقطه حد → x → ${xVal});
                 steps.push('🔹 مرحله ۲: بررسی وجود حد چپ و راست (نمونه ساده)');
-
-Amirali, [11/13/2025 9:40 PM]
-const expr = math.parse(safeExpr).compile();
+                const expr = math.parse(safeExpr).compile();
                 const value = expr.evaluate({x: xVal});
                 steps.push(🔹 مرحله ۳: جایگذاری مقدار x = ${xVal});
                 steps.push(🔹 مرحله ۴: نتیجه نهایی حد = ${value});
@@ -161,7 +180,6 @@ document.getElementById('nextButton').addEventListener('click', showNextStep);
 
 </body>
 </html>
-
 
 
 

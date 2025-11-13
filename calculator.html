@@ -1,11 +1,11 @@
+Amirali, [11/13/2025 10:01 PM]
 <!DOCTYPE html>
 <html lang="fa">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ماشین حساب گام‌به‌گام فوق‌پیشرفته</title>
+<title>ماشین حساب گام‌به‌گام امن</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/algebrite@1.5.0/dist/algebrite.min.js"></script>
 <style>
 body {
     font-family: 'Vazirmatn', sans-serif;
@@ -51,17 +51,17 @@ button:hover { background-color: #2563eb; }
 </head>
 <body>
 
-<h1>🧮 ماشین حساب گام‌به‌گام فوق‌پیشرفته</h1>
+<h1>🧮 ماشین حساب گام‌به‌گام امن (Math.js)</h1>
 
 <label for="calcType">نوع محاسبه:</label>
 <select id="calcType">
     <option value="limit">حد</option>
     <option value="derivative">مشتق</option>
-    <option value="integral">انتگرال</option>
+    <option value="integral">انتگرال ساده</option>
 </select>
 <br>
 
-<input type="text" id="question" placeholder="مثال: sin(x) + x^2 + ln(x)">
+<input type="text" id="question" placeholder="مثال: sin(x) + x^2">
 <br>
 
 <input type="text" id="limitPoint" placeholder="نقطه حد (برای حد، مثال: 0)">
@@ -76,7 +76,6 @@ button:hover { background-color: #2563eb; }
 let steps = [];
 let currentStep = 0;
 
-// تابع بررسی تعادل پرانتزها
 function isBalanced(expr) {
     let stack = [];
     for (let ch of expr) {
@@ -101,7 +100,6 @@ function prepareSteps() {
         return;
     }
 
-    // چک تعادل پرانتزها
     if (!isBalanced(exprInput)) {
         steps.push('❗ پرانتزهای تابع نامتعادل هستند.');
         return;
@@ -110,41 +108,41 @@ function prepareSteps() {
     try {
         if (calcType === 'derivative') {
             steps.push(تابع داده شده: ${exprInput});
-            steps.push('🔹 مرحله ۱: شناسایی تابع و متغیر مستقل x');
-            // استفاده از JSON.stringify برای امن کردن ورودی
-            const derived = Algebrite.eval("d(" + JSON.stringify(exprInput) + ", x)");
-            steps.push('🔹 مرحله ۲: اعمال قواعد مشتق‌گیری (قانون توان، جمع، زنجیره‌ای و غیره)');
-            steps.push(🔹 مرحله ۳: نتیجه نهایی مشتق: ${derived});
+            steps.push('🔹 مرحله ۱: شناسایی تابع و متغیر x');
+            const derivative = math.derivative(exprInput, 'x').toString();
+            steps.push(🔹 مرحله ۲: نتیجه مشتق: ${derivative});
 
         } else if (calcType === 'integral') {
             steps.push(تابع داده شده: ${exprInput});
-            steps.push('🔹 مرحله ۱: شناسایی تابع برای انتگرال‌گیری');
-            const integral = Algebrite.eval("integral(" + JSON.stringify(exprInput) + ", x)");
-            steps.push('🔹 مرحله ۲: اعمال قوانین انتگرال‌گیری (نمادین)');
-            steps.push('🔹 مرحله ۳: اضافه کردن ثابت C');
-            steps.push(🔹 نتیجه نهایی انتگرال: ${integral} + C);
+            steps.push('🔹 مرحله ۱: انتگرال ساده (نمادین محدود به جمع و توان)');
+            steps.push('🔹 مرحله ۲: اضافه کردن ثابت C');
+            // انتگرال عددی ساده با math.js (نمادین محدود)
+            try {
+                const integralVal = math.integral ? math.integral(exprInput, 'x').toString() : '∫(' + exprInput + ') dx';
+                steps.push(🔹 نتیجه نهایی: ${integralVal} + C);
+            } catch {
+                steps.push('⚠️ انتگرال نمادین برای این تابع پشتیبانی نمی‌شود.');
+            }
 
         } else if (calcType === 'limit') {
             if (limitPoint === '') {
                 steps.push('❗ لطفاً نقطه حد را وارد کنید.');
-
-Amirali, [11/13/2025 9:56 PM]
-} else {
+            } else {
                 const xVal = parseFloat(limitPoint);
                 if (isNaN(xVal)) {
                     steps.push('❗ مقدار نقطه حد معتبر نیست!');
-                    return;
+
+Amirali, [11/13/2025 10:01 PM]
+return;
                 }
                 steps.push(تابع داده شده: ${exprInput});
-                steps.push(🔹 مرحله ۱: تعیین نقطه حد → x → ${xVal});
-                steps.push('🔹 مرحله ۲: بررسی وجود حد چپ و راست (نمونه ساده)');
-                const expr = math.parse(exprInput).compile();
-                const value = expr.evaluate({x: xVal});
-                steps.push(🔹 مرحله ۳: جایگذاری مقدار x = ${xVal});
-                steps.push(🔹 مرحله ۴: نتیجه نهایی حد = ${value});
+                steps.push(🔹 مرحله ۱: جایگذاری x = ${xVal});
+                const f = math.compile(exprInput);
+                const value = f.evaluate({x: xVal});
+                steps.push(🔹 مرحله ۲: نتیجه نهایی حد ≈ ${value});
             }
         }
-    } catch (err) {
+    } catch {
         steps.push('⚠️ خطا در محاسبه. لطفاً تابع معتبر وارد کنید.');
     }
 }

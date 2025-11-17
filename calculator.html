@@ -1,4 +1,4 @@
-Amirali, [11/17/2025 7:13 PM]
+Amirali, [11/17/2025 7:42 PM]
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
@@ -6,10 +6,7 @@ Amirali, [11/17/2025 7:13 PM]
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ماشین حساب مشتق، انتگرال و حد</title>
     
-    <!-- فونت فارسی زیبا -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vazirmatn@33.0.0/Vazirmatn-font-face.css">
-    
-    <!-- KaTeX برای نمایش ریاضی (سبک‌تر و سریع‌تر از MathJax) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js"
@@ -20,14 +17,14 @@ Amirali, [11/17/2025 7:13 PM]
         .container {max-width: 950px; margin:0 auto; background:#fff; border-radius:18px; overflow:hidden; box-shadow:0 15px 40px rgba(0,0,0,0.1);}
         h1 {background: linear-gradient(135deg,#667eea,#764ba2); color:white; margin:0; padding:25px; text-align:center; font-size:28px;}
         .tabs {display:flex; background:#2c3e50;}
-        .tab {flex:1; padding:18px; text-align:center; cursor:pointer; transition:0.3s; font-weight:bold;}
+        .tab {flex:1; padding:18px; text-align:center; cursor:pointer; transition:0.3s; font-weight:bold; color:#fff;}
         .tab.active {background:#667eea;}
         .content {padding:30px;}
         textarea, input[type=text] {width:100%; padding:15px; margin:12px 0; border:2px solid #ddd; border-radius:12px; font-size:18px; font-family: 'Vazirmatn', monospace;}
         button {background:#667eea; color:white; border:none; padding:14px 32px; border-radius:12px; font-size:18px; cursor:pointer; margin-top:10px;}
         button:hover {background:#5a6fd8;}
         .result {margin-top:25px; padding:20px; background:#f8f9ff; border-right:6px solid #667eea; border-radius:12px; font-size:19px;}
-        .loading {color:#667eea; font-size:20px; text-align:center;}
+        .loading {color:#667eea; font-size:20px; text-align:center; padding:20px;}
         .note {font-size:14px; color:#777; margin-top:20px;}
     </style>
 </head>
@@ -53,7 +50,7 @@ Amirali, [11/17/2025 7:13 PM]
             <!-- انتگرال -->
             <div id="integ" class="tab-content" style="display:none">
                 <h2>انتگرال نامعین</h2>
-                <p>مثال: x^2 + 4*x + 1/x</p>
+                <p>مثال: x^2 + 4*x + 1/x + sin(x)</p>
                 <textarea id="expr-integ" placeholder="تابع را وارد کنید">x^2 + 4*x</textarea>
                 <button onclick="calc('integral')">محاسبه انتگرال</button>
             </div>
@@ -68,16 +65,17 @@ Amirali, [11/17/2025 7:13 PM]
             </div>
 
             <div id="result"></div>
-            <div class="note">همه محاسبات به صورت آفلاین و در مرورگر شما انجام می‌شود.</div>
+            <div class="note">همه محاسبات آفلاین و در مرورگر شما انجام می‌شود • برای انتگرال از کتابخانه nerdamer استفاده شده</div>
         </div>
     </div>
 
-    <!-- کتابخانه اصلی Math.js -->
+    <!-- کتابخانه‌های اصلی -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.0.0/math.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/nerdamer@1.1.15/all.min.js"></script>
 
-Amirali, [11/17/2025 7:13 PM]
+Amirali, [11/17/2025 7:42 PM]
 <script>
-        // تب‌ها
+        // سوئیچ تب‌ها
         document.querySelectorAll('.tab').forEach(t => {
             t.addEventListener('click', () => {
                 document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
@@ -91,14 +89,14 @@ Amirali, [11/17/2025 7:13 PM]
             let expr = '';
             let xval = null;
 
-            if (type === 'derivative') expr = document.getElementById('expr-deriv').value;
-            if (type === 'integral') expr = document.getElementById('expr-integ').value;
+            if (type === 'derivative') expr = document.getElementById('expr-deriv').value.trim();
+            if (type === 'integral')   expr = document.getElementById('expr-integ').value.trim();
             if (type === 'limit') {
-                expr = document.getElementById('expr-limit').value;
+                expr = document.getElementById('expr-limit').value.trim();
                 xval = document.getElementById('limit-x').value;
             }
 
-            if (!expr.trim()) return alert('لطفاً عبارت را وارد کنید!');
+            if (!expr) return alert('لطفاً عبارت را وارد کنید!');
 
             document.getElementById('result').innerHTML = '<div class="loading">در حال محاسبه...</div>';
 
@@ -111,39 +109,45 @@ Amirali, [11/17/2025 7:13 PM]
                         const node = math.parse(expr);
                         const deriv = math.derivative(node, 'x');
                         result = deriv.toString();
-                        steps = مشتق ${expr} = ${result};
+                        steps = \\frac{d}{dx}(${expr}) = ${result};
                     }
 
                     else if (type === 'integral') {
-                        const node = math.parse(expr);
-                        const integ = math.integrate(node, 'x');  // انتگرال نامعین
-                        result = integ.toString() + ' + C';
-                        steps = ∫(${expr}) dx = ${result};
+                        // استفاده از nerdamer چون math.js انتگرال نمعین نداره
+                        const integ = nerdamer(integrate(${expr}, x));
+                        result = integ.toString() + " + C";
+                        steps = \\int (${expr})\\,dx = ${result};
                     }
 
                     else if (type === 'limit') {
                         const val = parseFloat(xval);
+                        if (isNaN(val)) throw new Error("مقدار x معتبر نیست");
                         const node = math.parse(expr);
                         const compiled = node.compile();
-                        // تقریب عددی حد از دو طرف
-                        const left  = compiled.evaluate({x: val - 0.0001});
-                        const right = compiled.evaluate({x: val + 0.0001});
-                        result = math.round((left + right)/2, 8);
-                        steps = وقتی x → ${val}، مقدار تابع ≈ $${result}$;
+                        const h = 0.000001;
+                        const left  = compiled.evaluate({x: val - h});
+                        const right = compiled.evaluate({x: val + h});
+                        const limitVal = (left + right) / 2;
+                        result = math.format(limitVal, {precision: 10});
+                        steps = \\lim_{x \\to ${val}} ${expr} = ${result};
                     }
 
+                    // نمایش نتیجه با KaTeX
                     document.getElementById('result').innerHTML = 
                         <div class="result">
                             <h3>نتیجه:</h3>
-                            <p>$$${result}$$</p>
-                            <small>${steps}</small>
+                            <p>$$${steps}$$</p>
                         </div>;
+                    // دوباره رندر KaTeX
+                    renderMathInElement(document.getElementById('result'));
                 } catch (e) {
-                    document.getElementById('result').innerHTML = <div class="result" style="color:red;">خطا: ${e.message}</div>;
+                    document.getElementById('result').innerHTML = 
+                        <div class="result" style="color:red;background:#ffe6e6;">
+                            خطا: ${e.message || e}
+                        </div>;
                 }
-            }, 300);
+            }, 100);
         }
     </script>
 </body>
 </html>
-

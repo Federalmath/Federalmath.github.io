@@ -1,141 +1,149 @@
+Amirali, [11/17/2025 7:13 PM]
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="fa" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ماشین حساب عددی امن</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js"></script>
-<style>
-body {
-    font-family: 'Vazirmatn', sans-serif;
-    background: linear-gradient(180deg, #f5f7fa, #c3cfe2);
-    text-align: center;
-    padding: 40px;
-}
-h1 { color: #222; margin-bottom: 20px; }
-input, button {
-    padding: 10px;
-    margin: 8px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-}
-button {
-    cursor: pointer;
-    background-color: #3b82f6;
-    color: #fff;
-    border: none;
-    transition: 0.2s;
-}
-button:hover { background-color: #2563eb; }
-#steps {
-    margin-top: 25px;
-    text-align: left;
-    display: inline-block;
-    background: #fff;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 0 15px #bbb;
-    max-width: 600px;
-    min-height: 100px;
-    direction: rtl;
-    font-size: 17px;
-}
-.step { margin-bottom: 12px; animation: fadeIn 0.4s ease; }
-@keyframes fadeIn {
-    from {opacity: 0; transform: translateY(5px);}
-    to {opacity: 1; transform: translateY(0);}
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ماشین حساب مشتق، انتگرال و حد</title>
+    
+    <!-- فونت فارسی زیبا -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vazirmatn@33.0.0/Vazirmatn-font-face.css">
+    
+    <!-- KaTeX برای نمایش ریاضی (سبک‌تر و سریع‌تر از MathJax) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js"
+            onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '\\(', right: '\\)', display: false}]});"></script>
+
+    <style>
+        body {font-family: 'Vazirmatn', sans-serif; background: #f4f6f9; margin:0; padding:20px; line-height:1.7;}
+        .container {max-width: 950px; margin:0 auto; background:#fff; border-radius:18px; overflow:hidden; box-shadow:0 15px 40px rgba(0,0,0,0.1);}
+        h1 {background: linear-gradient(135deg,#667eea,#764ba2); color:white; margin:0; padding:25px; text-align:center; font-size:28px;}
+        .tabs {display:flex; background:#2c3e50;}
+        .tab {flex:1; padding:18px; text-align:center; cursor:pointer; transition:0.3s; font-weight:bold;}
+        .tab.active {background:#667eea;}
+        .content {padding:30px;}
+        textarea, input[type=text] {width:100%; padding:15px; margin:12px 0; border:2px solid #ddd; border-radius:12px; font-size:18px; font-family: 'Vazirmatn', monospace;}
+        button {background:#667eea; color:white; border:none; padding:14px 32px; border-radius:12px; font-size:18px; cursor:pointer; margin-top:10px;}
+        button:hover {background:#5a6fd8;}
+        .result {margin-top:25px; padding:20px; background:#f8f9ff; border-right:6px solid #667eea; border-radius:12px; font-size:19px;}
+        .loading {color:#667eea; font-size:20px; text-align:center;}
+        .note {font-size:14px; color:#777; margin-top:20px;}
+    </style>
 </head>
 <body>
+    <div class="container">
+        <h1>ماشین حساب پیشرفته مشتق، انتگرال و حد</h1>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="deriv">مشتق</div>
+            <div class="tab" data-tab="integ">انتگرال</div>
+            <div class="tab" data-tab="limit">حد</div>
+        </div>
 
-<h1>🧮 ماشین حساب عددی امن</h1>
+        <div class="content">
+            <!-- مشتق -->
+            <div id="deriv" class="tab-content">
+                <h2>مشتق‌گیری</h2>
+                <p>مثال: x^3 + 5*x^2 + sin(x) + e^x</p>
+                <textarea id="expr-deriv" placeholder="تابع f(x) را وارد کنید">x^3 + 5*x^2</textarea>
+                <button onclick="calc('derivative')">محاسبه مشتق</button>
+            </div>
 
-<input type="text" id="question" placeholder="مثال: 2^3 + sqrt(16) - 5">
-<br>
-<button id="startButton">شروع گام‌به‌گام</button>
-<button id="nextButton" style="display:none;">مرحله بعد ➜</button>
+            <!-- انتگرال -->
+            <div id="integ" class="tab-content" style="display:none">
+                <h2>انتگرال نامعین</h2>
+                <p>مثال: x^2 + 4*x + 1/x</p>
+                <textarea id="expr-integ" placeholder="تابع را وارد کنید">x^2 + 4*x</textarea>
+                <button onclick="calc('integral')">محاسبه انتگرال</button>
+            </div>
 
-<div id="steps"></div>
+            <!-- حد -->
+            <div id="limit" class="tab-content" style="display:none">
+                <h2>محاسبه حد</h2>
+                <p>مثال: (x^2-4)/(x-2) وقتی x → 2</p>
+                <textarea id="expr-limit" placeholder="عبارت حد">(x^2 - 4)/(x - 2)</textarea>
+                <p>مقدار تقریبی x: <input type="text" id="limit-x" value="2" style="width:100px;"></p>
+                <button onclick="calc('limit')">محاسبه حد</button>
+            </div>
 
+            <div id="result"></div>
+            <div class="note">همه محاسبات به صورت آفلاین و در مرورگر شما انجام می‌شود.</div>
+        </div>
+    </div>
+
+    <!-- کتابخانه اصلی Math.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.0.0/math.min.js"></script>
+
+Amirali, [11/17/2025 7:13 PM]
 <script>
-let steps = [];
-let currentStep = 0;
+        // تب‌ها
+        document.querySelectorAll('.tab').forEach(t => {
+            t.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(x => x.style.display = 'none');
+                t.classList.add('active');
+                document.getElementById(t.dataset.tab).style.display = 'block';
+            });
+        });
 
-// بررسی پرانتزهای متعادل
-function isBalanced(expr) {
-    let stack = [];
-    for (let ch of expr) {
-        if (ch === '(') stack.push(ch);
-        else if (ch === ')') {
-            if (stack.length === 0) return false;
-            stack.pop();
+        function calc(type) {
+            let expr = '';
+            let xval = null;
+
+            if (type === 'derivative') expr = document.getElementById('expr-deriv').value;
+            if (type === 'integral') expr = document.getElementById('expr-integ').value;
+            if (type === 'limit') {
+                expr = document.getElementById('expr-limit').value;
+                xval = document.getElementById('limit-x').value;
+            }
+
+            if (!expr.trim()) return alert('لطفاً عبارت را وارد کنید!');
+
+            document.getElementById('result').innerHTML = '<div class="loading">در حال محاسبه...</div>';
+
+            setTimeout(() => {
+                try {
+                    let result = '';
+                    let steps = '';
+
+                    if (type === 'derivative') {
+                        const node = math.parse(expr);
+                        const deriv = math.derivative(node, 'x');
+                        result = deriv.toString();
+                        steps = مشتق ${expr} = ${result};
+                    }
+
+                    else if (type === 'integral') {
+                        const node = math.parse(expr);
+                        const integ = math.integrate(node, 'x');  // انتگرال نامعین
+                        result = integ.toString() + ' + C';
+                        steps = ∫(${expr}) dx = ${result};
+                    }
+
+                    else if (type === 'limit') {
+                        const val = parseFloat(xval);
+                        const node = math.parse(expr);
+                        const compiled = node.compile();
+                        // تقریب عددی حد از دو طرف
+                        const left  = compiled.evaluate({x: val - 0.0001});
+                        const right = compiled.evaluate({x: val + 0.0001});
+                        result = math.round((left + right)/2, 8);
+                        steps = وقتی x → ${val}، مقدار تابع ≈ $${result}$;
+                    }
+
+                    document.getElementById('result').innerHTML = 
+                        <div class="result">
+                            <h3>نتیجه:</h3>
+                            <p>$$${result}$$</p>
+                            <small>${steps}</small>
+                        </div>;
+                } catch (e) {
+                    document.getElementById('result').innerHTML = <div class="result" style="color:red;">خطا: ${e.message}</div>;
+                }
+            }, 300);
         }
-    }
-    return stack.length === 0;
-}
-
-// آماده‌سازی مراحل
-function prepareSteps() {
-    steps = [];
-    currentStep = 0;
-
-    let exprInput = document.getElementById('question').value.trim();
-
-    if(exprInput === "") {
-        steps.push('❗ لطفاً ابتدا یک عبارت عددی وارد کنید.');
-        return;
-    }
-
-    // فیلتر کردن کاراکترهای غیرمجاز به شکل امن
-    exprInput = exprInput.replace(/[^0-9+\-*/^().,]/g, '');
-
-    if(!isBalanced(exprInput)) {
-        steps.push('❗ پرانتزهای عبارت نامتعادل هستند.');
-        return;
-    }
-
-    try {
-        steps.push(عبارت وارد شده: ${exprInput});
-        steps.push('🔹 مرحله ۱: بررسی عملیات موجود (جمع، تفریق، ضرب، تقسیم، توان، رادیکال و توابع ساده)');
-        const expr = math.parse(exprInput);
-        steps.push(🔹 مرحله ۲: نمایش ساختار داخلی عبارت: ${expr.toString()});
-        const value = expr.evaluate();
-        steps.push(🔹 مرحله ۳: محاسبه مقدار نهایی: ${value});
-    } catch {
-        steps.push('⚠️ خطا در محاسبه. لطفاً فقط عبارات عددی معتبر وارد کنید.');
-    }
-}
-
-// نمایش مرحله بعد
-function showNextStep() {
-    if(currentStep < steps.length) {
-        const stepsDiv = document.getElementById('steps');
-        const div = document.createElement('div');
-        div.className = 'step';
-        div.textContent = steps[currentStep];
-        stepsDiv.appendChild(div);
-        currentStep++;
-        if(currentStep === steps.length) {
-            document.getElementById('nextButton').style.display = 'none';
-        }
-    }
-}
-
-document.getElementById('startButton').addEventListener('click', function(){
-    document.getElementById('steps').innerHTML = '';
-    prepareSteps();
-    currentStep = 0;
-    if(steps.length > 0){
-        document.getElementById('nextButton').style.display = 'inline-block';
-        showNextStep();
-    }
-});
-
-document.getElementById('nextButton').addEventListener('click', showNextStep);
-</script>
-
+    </script>
 </body>
 </html>
 

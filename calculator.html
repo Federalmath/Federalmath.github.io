@@ -6,63 +6,96 @@
   <title>محاسبه مشتق گام‌به‌گام</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;700&display=swap');
+
+    * {
+      font-family: 'Vazirmatn', sans-serif;
+      box-sizing: border-box;
+    }
+
     body {
-      background: linear-gradient(135deg, #1e3c72, #2a5298);
-      font-family: "IRANSans", sans-serif;
-      padding: 30px;
-      direction: rtl;
+      margin: 0;
+      padding: 40px 20px;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
       color: #fff;
+      display: flex;
+      justify-content: center;
     }
+
     .box {
-      background: rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(10px);
-      padding: 30px;
-      border-radius: 20px;
-      max-width: 650px;
-      margin: auto;
-      box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      width: 100%;
+      max-width: 700px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 22px;
+      padding: 35px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+      backdrop-filter: blur(15px);
+      border: 1px solid rgba(255,255,255,0.15);
+      animation: fadeIn 0.8s ease;
     }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     h2 {
       text-align: center;
-      font-size: 28px;
-      margin-bottom: 20px;
+      font-size: 30px;
+      margin-bottom: 15px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: #ffe082;
     }
+
     input {
       width: 100%;
-      padding: 12px;
-      border-radius: 12px;
+      padding: 14px;
+      border-radius: 14px;
       border: 0;
       font-size: 18px;
       margin-top: 10px;
+      background: rgba(255,255,255,0.25);
+      color: #fff;
       outline: none;
-    }
-    button {
-      width: 100%;
-      margin-top: 20px;
-      padding: 14px;
-      font-size: 20px;
-      border: 0;
-      background: #ff9800;
-      color: #000;
-      border-radius: 12px;
-      cursor: pointer;
-      font-weight: bold;
       transition: 0.3s;
     }
-    button:hover {
-      background: #ffc107;
-      transform: translateY(-2px);
+
+    input:focus {
+      background: rgba(255,255,255,0.35);
+      box-shadow: 0 0 10px #ffc10788;
     }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      margin-top: 22px;
+      font-size: 20px;
+      border: 0;
+      background: linear-gradient(45deg, #ff9100, #ffc107);
+      color: #000;
+      border-radius: 16px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.25s;
+      box-shadow: 0 4px 12px #00000055;
+    }
+
+    button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 18px #00000077;
+    }
+
     pre {
-      background: rgba(255, 255, 255, 0.2);
-      padding: 20px;
-      border-radius: 12px;
+      background: rgba(0,0,0,0.35);
+      padding: 22px;
+      border-radius: 14px;
       white-space: pre-wrap;
-      color: #fff;
-      margin-top: 15px;
-      font-size: 17px;
-      border: 1px solid rgba(255, 255, 255, 0.3);
+      margin-top: 20px;
+      font-size: 18px;
+      line-height: 1.8;
+      border: 1px solid rgba(255,255,255,0.15);
+      animation: fadeIn 0.6s ease;
     }
   </style>
 </head>

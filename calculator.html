@@ -7,11 +7,109 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
   <style>
     body {
-      background:#f3f3f3;
-      font-family: sans-serif;
-      padding:20px;
-      line-height:1.8;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      font-family: "IRANSans", sans-serif;
+      padding: 30px;
+      direction: rtl;
+      color: #fff;
     }
+    .box {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      padding: 30px;
+      border-radius: 20px;
+      max-width: 650px;
+      margin: auto;
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    h2 {
+      text-align: center;
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: 0;
+      font-size: 18px;
+      margin-top: 10px;
+      outline: none;
+    }
+    button {
+      width: 100%;
+      margin-top: 20px;
+      padding: 14px;
+      font-size: 20px;
+      border: 0;
+      background: #ff9800;
+      color: #000;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #ffc107;
+      transform: translateY(-2px);
+    }
+    pre {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 20px;
+      border-radius: 12px;
+      white-space: pre-wrap;
+      color: #fff;
+      margin-top: 15px;
+      font-size: 17px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+  </style>
+</head>
+<body>
+
+<div class="box">
+  <h2>ماشین حساب مشتق گام‌به‌گام</h2>
+  <p>عبارت خود را وارد کنید (مثلاً: sin(x)*x^2)</p>
+
+  <input id="expr" placeholder="مثال: x^3 + sin(x)" />
+  <button onclick="calc()">محاسبه مشتق</button>
+
+  <h3>نتیجه:</h3>
+  <pre id="result">---</pre>
+</div>
+
+<script>
+function calc() {
+  const input = document.getElementById("expr").value;
+  const resultBox = document.getElementById("result");
+
+  try {
+    // مشتق‌گیری درست فقط با math.derivative
+    const der = math.derivative(input, 'x');
+
+    // ساده‌سازی صحیح
+    const simplified = math.simplify(der);
+
+    let steps = "";
+    steps += "ورودی: " + input + "
+
+";
+    steps += "مشتق نمادین (خام): " + der.toString() + "
+
+";
+    steps += "مشتق ساده‌شده: " + simplified.toString();
+
+    resultBox.textContent = steps;
+  } catch(e) {
+    resultBox.textContent = "❌ ورودی معتبر نیست یا math.js نتوانست محاسبه کند";
+  }
+}
+</script>
+
+</body>
+</html>
+
     .box {
       background:#fff;
       padding:20px;
@@ -74,3 +172,4 @@ function calc() {
 
 </body>
 </html>
+

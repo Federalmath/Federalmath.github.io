@@ -1,79 +1,141 @@
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<!doctype html>
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>محاسبه مشتق گام‌به‌گام</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
-  <style>
-    body {
-      background:#f3f3f3;
-      font-family: sans-serif;
-      padding:20px;
-      line-height:1.8;
-    }
-    .box {
-      background:#fff;
-      padding:20px;
-      border-radius:12px;
-      max-width:600px;
-      margin:auto;
-      box-shadow:0 0 10px #0002;
-    }
-    input {
-      width:100%; padding:10px; border-radius:8px; border:1px solid #ccc;
-      font-size:18px;
-    }
-    button {
-      margin-top:15px; padding:10px 20px; font-size:18px;
-      border:0; background:#2196f3; color:#fff; border-radius:8px;
-      cursor:pointer;
-    }
-    pre {
-      background:#eee; padding:15px; border-radius:10px;
-      white-space:pre-wrap;
-    }
-  </style>
+<meta charset="utf-8">
+<title>ماشین حساب مشتق گام‌به‌گام</title>
+<style>
+body {
+  font-family: sans-serif;
+  direction: rtl;
+  padding: 20px;
+}
+input {
+  width: 300px;
+  padding: 8px;
+  font-size: 18px;
+}
+button {
+  padding: 8px 16px;
+  font-size: 18px;
+}
+#steps {
+  margin-top: 20px;
+  white-space: pre-line;
+  font-size: 18px;
+  background: #f4f4f4;
+  padding: 15px;
+  border-radius: 8px;
+}
+</style>
 </head>
+
 <body>
 
-<div class="box">
-  <h2>ماشین حساب مشتق گام‌به‌گام</h2>
-  <p>عبارت خود را وارد کنید (مثلاً: sin(x)*x^2)</p>
+<h2>ماشین حساب مشتق گام‌به‌گام</h2>
 
-  <input id="expr" placeholder="مثال: x^3 + sin(x)" />
-  <button onclick="calc()">محاسبه مشتق</button>
+<input id="expr" placeholder="مثال: 3x^2 + 5x - 7">
+<button onclick="calc()">محاسبه</button>
 
-  <h3>نتیجه:</h3>
-  <pre id="result">---</pre>
-</div>
+<div id="steps"></div>
 
 <script>
-function calc() {
-  const input = document.getElementById("expr").value;
-  const resultBox = document.getElementById("result");
 
-  try {
-    // مشتق‌گیری درست فقط با math.derivative
-    const der = math.derivative(input, 'x');
-
-    // ساده‌سازی صحیح
-    const simplified = math.simplify(der);
-
-    let steps = "";
-    steps += "ورودی: " + input + "
-
-";
-    steps += "مشتق نمادین (خام): " + der.toString() + "
-
-";
-    steps += "مشتق ساده‌شده: " + simplified.toString();
-
-    resultBox.textContent = steps;
-  } catch(e) {
-    resultBox.textContent = "❌ ورودی معتبر نیست یا math.js نتوانست محاسبه کند";
-  }
+// --- ابزار کمکی ---
+function isNumber(str){
+    return /^-?\d+(\.\d+)?$/.test(str);
 }
+
+// --- مشتق‌گیر اصلی ---
+function derivative(expr, steps){
+    
+    expr = expr.replace(/\s+/g, "");  
+
+    // حالت‌هایی مثل 3x → 3*x
+    expr = expr.replace(/(\d)(x)/g, "$1*$2");
+
+    // مشتق چند جمله‌ای
+    if(expr.includes("+") || expr.includes("-")){
+        let parts = expr.replace(/-/g,"+-").split("+").filter(p=>p!=="");
+        let result = [];
+        steps.push("تشخیص چندجمله‌ای:");
+        parts.forEach(p=>{
+            steps.push("مشتق " + p);
+            result.push( derivative(p, steps) );
+        });
+        return result.join(" + ");
+    }
+
+    // مشتق a*x^n
+    if(/^[0-9\*\.]*x\^\d+$/.test(expr)){
+        let [coef, pow] = expr.split("x^");
+        coef = coef.replace("*", "") || "1";
+        coef = Number(coef);
+        pow  = Number(pow);
+        steps.push(`قاعده توان: مشتق x^n = n*x^(n-1)`);
+        steps.push(`${coef} * x^${pow} → ${coef} * ${pow} * x^${pow-1}`);
+        return (coef * pow) + "*x^" + (pow-1);
+    }
+
+    // مشتق x
+    if(expr === "x"){
+        steps.push("مشتق x برابر 1 است");
+        return "1";
+    }
+
+    // مشتق a*x
+    if(/^\d+\*x$/.test(expr)){
+        let a = Number(expr.split("*")[0]);
+        steps.push("مشتق a*x برابر a است");
+        return String(a);
+    }
+
+    // مشتق ثابت
+    if(isNumber(expr)){
+        steps.push("مشتق عدد ثابت همیشه 0 است");
+        return "0";
+    }
+
+    // مشتق sin(x)
+    if(expr === "sin(x)"){
+        steps.push("مشتق sin(x) برابر cos(x) است");
+        return "cos(x)";
+    }
+
+    // مشتق cos(x)
+    if(expr === "cos(x)"){
+        steps.push("مشتق cos(x) برابر -sin(x) است");
+        return "-sin(x)";
+    }
+
+    // مشتق √x  →  1/(2√x)
+    if(expr === "sqrt(x)"){
+        steps.push("مشتق √x برابر 1/(2√x) است");
+        return "1/(2*sqrt(x))";
+    }
+
+    // مشتق e^x
+    if(expr === "e^x"){
+        steps.push("مشتق e^x برابر خود e^x است");
+        return "e^x";
+    }
+
+    return "⚠ ناشناخته";
+}
+
+
+// --- رویداد اصلی ---
+function calc(){
+    const expr = document.getElementById("expr").value;
+    const steps = [];
+
+    const ans = derivative(expr, steps);
+
+    document.getElementById("steps").innerText =
+        "ورودی: " + expr + "\n\n" +
+        "گام‌ها:\n" + steps.join("\n") +
+        "\n\n" + "نتیجه نهایی مشتق:  " + ans;
+}
+
 </script>
 
 </body>

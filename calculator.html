@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>ماشین حساب گام به گام انتگرال</title>
-<script src="https://unpkg.com/algebrite"></script>
 <style>
     body { font-family: Tahoma, sans-serif; background: #f0f0f0; padding: 20px; }
     .container { background: #fff; padding: 20px; border-radius: 12px; max-width: 600px; margin: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.2);}
@@ -34,17 +33,20 @@
   <input type="text" id="upper">
 </div>
 
-<button onclick="calculateIntegral()">محاسبه گام به گام</button>
+<button id="calculateBtn">محاسبه گام به گام</button>
 
 <div id="result" class="result"></div>
 </div>
+
+<!-- اضافه کردن کتابخانه Algebrite -->
+<script src="https://cdn.jsdelivr.net/npm/algebrite@1.5.0/dist/algebrite.bundle-for-browser.min.js"></script>
 
 <script>
 document.getElementById('integralType').addEventListener('change', function() {
     document.getElementById('limits').style.display = this.value === 'definite' ? 'block' : 'none';
 });
 
-function calculateIntegral() {
+document.getElementById('calculateBtn').addEventListener('click', function() {
     let func = document.getElementById('function').value;
     let type = document.getElementById('integralType').value;
     let lower = document.getElementById('lower').value;
@@ -61,6 +63,10 @@ function calculateIntegral() {
         // گام 2: ایجاد انتگرال
         let integralExpr = `integral(${func}, x)`;
         if (type === 'definite') {
+            if(lower === '' || upper === '') {
+                resultDiv.innerHTML += "لطفاً حدهای انتگرال را وارد کنید.";
+                return;
+            }
             integralExpr = `integral(${func}, x, ${lower}, ${upper})`;
         }
 
@@ -72,7 +78,7 @@ function calculateIntegral() {
     } catch(e) {
         resultDiv.innerHTML = "خطا در محاسبه: " + e.message;
     }
-}
+});
 </script>
 </body>
 </html>

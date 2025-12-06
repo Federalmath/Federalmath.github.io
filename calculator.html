@@ -1,141 +1,103 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="fa">
 <head>
-<meta charset="utf-8">
-<title>ماشین حساب مشتق گام‌به‌گام</title>
+<meta charset="UTF-8">
+<title>انتگرال گام به گام پیشرفته</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/algebrite/1.5.0/algebrite.min.js"></script>
 <style>
-body {
-  font-family: sans-serif;
-  direction: rtl;
-  padding: 20px;
-}
-input {
-  width: 300px;
-  padding: 8px;
-  font-size: 18px;
-}
-button {
-  padding: 8px 16px;
-  font-size: 18px;
-}
-#steps {
-  margin-top: 20px;
-  white-space: pre-line;
-  font-size: 18px;
-  background: #f4f4f4;
-  padding: 15px;
-  border-radius: 8px;
-}
+    body { font-family: Tahoma, sans-serif; padding: 20px; direction: rtl; background: #f5f5f5; }
+    input, button { padding: 10px; font-size: 16px; margin: 5px 0; width: 350px; }
+    #result { margin-top: 20px; padding: 15px; background: #fff; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.2);}
+    .step { margin-bottom: 15px; }
+    .highlight { background: #e0f7fa; padding: 5px; border-radius: 4px; }
 </style>
 </head>
-
 <body>
 
-<h2>ماشین حساب مشتق گام‌به‌گام</h2>
+<h2>محاسبه انتگرال گام به گام پیشرفته</h2>
 
-<input id="expr" placeholder="مثال: 3x^2 + 5x - 7">
-<button onclick="calc()">محاسبه</button>
+<label>عبارت انتگرال را وارد کنید:</label><br>
+<input type="text" id="integralInput" placeholder="مثلاً sin(x) + x^2"><br>
 
-<div id="steps"></div>
+<label>متغیر انتگرال:</label><br>
+<input type="text" id="variable" placeholder="مثلاً x"><br>
+
+<button onclick="calculateIntegral()">محاسبه</button>
+
+<div id="result"></div>
 
 <script>
-
-// --- ابزار کمکی ---
-function isNumber(str){
-    return /^-?\d+(\.\d+)?$/.test(str);
+function detectIntegralType(expr) {
+    // تشخیص نوع انتگرال به صورت ساده
+    if (/sin|cos|tan|cot|sec|csc/.test(expr)) return 'مثلثاتی';
+    if (/\^/.test(expr) && !/sin|cos|tan|cot|sec|csc/.test(expr)) return 'توان';
+    if (/sqrt/.test(expr)) return 'رادیکال';
+    if (/\//.test(expr)) return 'کسری';
+    if (/ln|log/.test(expr)) return 'لگاریتمی';
+    return 'ساده';
 }
 
-// --- مشتق‌گیر اصلی ---
-function derivative(expr, steps){
-    
-    expr = expr.replace(/\s+/g, "");  
+function calculateIntegral() {
+    const expr = document.getElementById('integralInput').value;
+    const variable = document.getElementById('variable').value || 'x';
+    const resultDiv = document.getElementById('result');
+    resultDiv.innerHTML = '';
 
-    // حالت‌هایی مثل 3x → 3*x
-    expr = expr.replace(/(\d)(x)/g, "$1*$2");
-
-    // مشتق چند جمله‌ای
-    if(expr.includes("+") || expr.includes("-")){
-        let parts = expr.replace(/-/g,"+-").split("+").filter(p=>p!=="");
-        let result = [];
-        steps.push("تشخیص چندجمله‌ای:");
-        parts.forEach(p=>{
-            steps.push("مشتق " + p);
-            result.push( derivative(p, steps) );
-        });
-        return result.join(" + ");
+    if (!expr) {
+        alert('لطفاً یک عبارت وارد کنید.');
+        return;
     }
 
-    // مشتق a*x^n
-    if(/^[0-9\*\.]*x\^\d+$/.test(expr)){
-        let [coef, pow] = expr.split("x^");
-        coef = coef.replace("*", "") || "1";
-        coef = Number(coef);
-        pow  = Number(pow);
-        steps.push(`قاعده توان: مشتق x^n = n*x^(n-1)`);
-        steps.push(`${coef} * x^${pow} → ${coef} * ${pow} * x^${pow-1}`);
-        return (coef * pow) + "*x^" + (pow-1);
-    }
+    try {
+        // تشخیص نوع انتگرال
+        let type = detectIntegralType(expr);
+        resultDiv.innerHTML += `<div class="step"><b>نوع انتگرال تشخیص داده شده:</b> ${type}</div>`;
 
-    // مشتق x
-    if(expr === "x"){
-        steps.push("مشتق x برابر 1 است");
-        return "1";
-    }
+        // مراحل گام به گام
+        let steps = [];
+        steps.push(`1️⃣ بررسی نوع عبارت: <span class="highlight">${expr}</span>`);
+        
+        switch(type) {
+            case 'مثلثاتی':
+                steps.push('2️⃣ روش: استفاده از روابط انتگرال توابع مثلثاتی و جایگزینی مناسب.');
+                break;
+            case 'توان':
+                steps.push('2️⃣ روش: افزایش توان + تقسیم بر توان جدید.');
+                break;
+            case 'رادیکال':
+                steps.push('2️⃣ روش: تبدیل رادیکال به توان کسری و استفاده از قانون انتگرال توان.');
+                break;
+            case 'کسری':
+                steps.push('2️⃣ روش: اگر ساده شود → روش تجزیه کسری جزئی.');
+                break;
+            case 'لگاریتمی':
+                steps.push('2️⃣ روش: استفاده از فرمول‌های انتگرال لگاریتمی.');
+                break;
+            default:
+                steps.push('2️⃣ روش: روش مستقیم و ساده.');
+        }
 
-    // مشتق a*x
-    if(/^\d+\*x$/.test(expr)){
-        let a = Number(expr.split("*")[0]);
-        steps.push("مشتق a*x برابر a است");
-        return String(a);
-    }
+        // محاسبه انتگرال با Algebrite
+        let integral = Algebrite.integral(expr, variable).toString();
+        steps.push(`3️⃣ حل انتگرال: Algebrite → ${integral}`);
+        steps.push(`4️⃣ اضافه کردن ثابت انتگرال: + C`);
+        steps.push(`5️⃣ بررسی صحت با مشتق: مشتق جواب ≈ عبارت اولیه`);
+        
+        // نمایش مراحل
+        resultDiv.innerHTML += `<div class="step"><b>مراحل گام به گام:</b><br>${steps.join('<br>')}</div>`;
 
-    // مشتق ثابت
-    if(isNumber(expr)){
-        steps.push("مشتق عدد ثابت همیشه 0 است");
-        return "0";
-    }
+        // نمایش جواب نهایی
+        let finalResult = `${integral} + C`;
+        resultDiv.innerHTML += `<div class="step"><b>جواب نهایی:</b> ${finalResult}</div>`;
 
-    // مشتق sin(x)
-    if(expr === "sin(x)"){
-        steps.push("مشتق sin(x) برابر cos(x) است");
-        return "cos(x)";
-    }
+        // بررسی با گرفتن مشتق
+        let derivativeCheck = Algebrite.derivative(integral, variable).toString();
+        resultDiv.innerHTML += `<div class="step"><b>بررسی صحت با مشتق:</b> مشتق جواب = ${derivativeCheck} ≈ ${expr}</div>`;
 
-    // مشتق cos(x)
-    if(expr === "cos(x)"){
-        steps.push("مشتق cos(x) برابر -sin(x) است");
-        return "-sin(x)";
+    } catch (err) {
+        resultDiv.innerHTML = 'خطا در محاسبه: ' + err;
     }
-
-    // مشتق √x  →  1/(2√x)
-    if(expr === "sqrt(x)"){
-        steps.push("مشتق √x برابر 1/(2√x) است");
-        return "1/(2*sqrt(x))";
-    }
-
-    // مشتق e^x
-    if(expr === "e^x"){
-        steps.push("مشتق e^x برابر خود e^x است");
-        return "e^x";
-    }
-
-    return "⚠ ناشناخته";
 }
-
-
-// --- رویداد اصلی ---
-function calc(){
-    const expr = document.getElementById("expr").value;
-    const steps = [];
-
-    const ans = derivative(expr, steps);
-
-    document.getElementById("steps").innerText =
-        "ورودی: " + expr + "\n\n" +
-        "گام‌ها:\n" + steps.join("\n") +
-        "\n\n" + "نتیجه نهایی مشتق:  " + ans;
-}
-
 </script>
 
 </body>

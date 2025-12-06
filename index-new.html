@@ -1,1 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>ماشین مشتق پیشرفته</title>
+
+<style>
+body { font-family: sans-serif; direction: rtl; padding: 20px; }
+input { width: 370px; padding: 10px; font-size: 18px; }
+button { padding: 10px 20px; font-size: 18px; margin-top: 10px; }
+#steps {
+  margin-top: 20px;
+  white-space: pre-line;
+  font-size: 18px;
+  background: #f4f4f4;
+  padding: 15px;
+  border-radius: 8px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>ماشین مشتق فوق‌پیشرفته (Chain + Product + Quotient)</h2>
+
+<input id="expr" placeholder="مثال: sin(3x^2+5x) / (x^2+1)">
+<button onclick="calc()">محاسبه مشتق</button>
+
+<div id="steps"></div>
+
+<script>
+
+// ------------------ ابزارهای پایه ------------------
+function isNumber(x){
+    return /^-?\d+(\.\d+)?$/.test(x);
+}
+
+// حذف فاصله
+function clean(expr){
+    return expr.replace(/\s+/g, "");
+}
+
+// جدا کردن پرانتز اصلی (sin(...))
+function outerFunc(expr){
+    let funcMatch = expr.match(/^([a-zA-Z]+)\((.*)\)$/);
+    if(!funcMatch) return null;
+    return { func: funcMatch[1], inside: funcMatch[2] };
+}
+
+// ------------------ RULE: مشتق چند جمله‌ای ------------------
+function splitPlusMinus(expr){
+    let out = [];
+    expr = expr.replace(/-/g,"+-");
+    let parts = expr.split("+").filter(p=>p!="");
+    return parts;
+}
+
+// ------------------ RULE: مشتق ضرب ------------------
+function productSplit(expr){
+    let parts = expr.split("*");
+    return (parts.length > 1) ? parts : null;
+}
+
+// ------------------ RULE: مشتق تقسیم ------------------
+function quotientSplit(expr){
+    let parts = expr.split("/");
+    return (parts.length === 2) ? parts : null;
+}
+
+// ------------------ RULE: توان ------------------
+function powerSplit(expr){
+    let parts = expr.split("^");
+    return (parts.length === 2) ? parts : null;
+}
+
+// ------------------ مشتق اصلی ------------------
+function derivative(expr, steps){
+    expr = clean(expr);
+
+    // -------- چند جمله ای --------
+    if(expr.includes("+") || expr.includes("-")){
+        let parts = splitPlusMinus(expr);
+        let out = [];
+        steps.push("تشخیص چندجمله‌ای:");
+        for(let p of parts){
+            steps.push("مشتق " + p + ":");
+            out.push( derivative(p, steps) );
+        }
+        return out.join(" + ");
+    }
+
+    // -------- تقسیم (Quotient Rule) --------
+    let q = quotientSplit(expr);
+    if(q){
+        let u = q[0], v = q[1];
+        steps.push("قاعده خارج‌قسمتی:");
+        steps.push("اگر f = u/v → f' = (u'v - uv') / v^2");
+
+        let du = derivative(u, steps);
+        let dv = derivative(v, steps);
+
+        return "(" + du + "*" + v + " - " + u + "*" + dv + ")/(" + v + "^2)";
+    }
+
+    // -------- ضرب (Product Rule) --------
+    let p = productSplit(expr);
+    if(p){
+        let u = p[0], v = p[1];
+        steps.push("قاعده ضرب:");
+        steps.push("اگر f = u*v → f' = u'*v + u*v'");
+
+        let du = derivative(u, steps);
+        let dv = derivative(v, steps);
+
+        return du + "*" + v + " + " + u + "*" + dv;
+    }
+
+    // -------- تابع با پرانتز (Chain Rule) --------
+    let f = outerFunc(expr);
+    if(f){
+        let func = f.func;
+        let inside = f.inside;
+        steps.push(`تشخیص تابع ترکیبی (${func}(g(x))): قاعده زنجیره`);
+        steps.push(`g(x) = ${inside}`);
+
+        let gPrime = derivative(inside, steps);
+
+        switch(func){
+            case "sin":
+                steps.push("مشتق sin(g) = cos(g) * g'");
+                return "cos(" + inside + ")*(" + gPrime + ")";
+
+            case "cos":
+                steps.push("مشتق cos(g) = -sin(g) * g'");
+                return "-sin(" + inside + ")*(" + gPrime + ")";
+
+            case "tan":
+                steps.push("مشتق tan(g) = sec(g)^2 * g'");
+                return "sec(" + inside + ")^2*(" + gPrime + ")";
+
+            case "cot":
+                steps.push("مشتق cot(g) = -csc(g)^2 * g'");
+                return "-csc(" + inside + ")^2*(" + gPrime + ")";
+
+            case "sec":
+                steps.push("مشتق sec(g) = sec(g)*tan(g) * g'");
+                return "sec(" + inside + ")*tan(" + inside + ")*(" + gPrime + ")";
+
+            case "csc":
+                steps.push("مشتق csc(g) = -csc(g)*cot(g) * g'");
+                return "-csc(" + inside + ")*cot(" + inside + ")*(" + gPrime + ")";
+
+            case "ln":
+                steps.push("مشتق ln(g) = g'/g");
+                return "(" + gPrime + ")/(" + inside + ")";
+
+            case "sqrt":
+                steps.push("مشتق sqrt(g) = g' / (2*sqrt(g))");
+                return "(" + gPrime + ")/(2*sqrt(" + inside + "))";
+
+            default:
+                steps.push("⚠ تابع ناشناخته: " + func);
+        }
+    }
+
+    // -------- توان --------
+    let pw = powerSplit(expr);
+    if(pw){
+        let base = pw[0], exp = pw[1];
+        if(base === "x" && isNumber(exp)){
+            steps.push(`مشتق x^n = n*x^(n-1)`);
+            return exp + "*x^" + (exp-1);
+        }
+    }
+
+    // -------- مشتق x --------
+    if(expr === "x"){
+        steps.push("مشتق x = 1");
+        return "1";
+    }
+
+    // -------- عدد ثابت --------
+    if(isNumber(expr)){
+        steps.push("مشتق ثابت = 0");
+        return "0";
+    }
+
+    return "⚠ ناشناخته";
+}
+
+// ---------------- تابع اصلی ----------------
+function calc(){
+    let expr = document.getElementById("expr").value;
+    let steps = [];
+    let ans = derivative(expr, steps);
+
+    document.getElementById("steps").innerText =
+        "ورودی: " + expr + "\n\n" +
+        "گام‌ها:\n" + steps.join("\n") +
+        "\n\nنتیجه نهایی: " + ans;
+}
+
+</script>
+
+</body>
+</html>
 

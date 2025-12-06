@@ -2,8 +2,7 @@
 <html lang="fa">
 <head>
 <meta charset="UTF-8">
-<title>ماشین حساب حد گام به گام</title>
-<script src="https://unpkg.com/algebrite"></script>
+<title>حد عددی بدون Algebrite</title>
 <style>
   body { font-family: Tahoma, sans-serif; margin: 40px; background: #f5f5f5; }
   h2 { color: #333; }
@@ -17,52 +16,62 @@
 </head>
 <body>
 
-<h2>ماشین حساب حد گام به گام</h2>
+<h2>ماشین حساب حد عددی</h2>
 
-<label>تابع (مثال: sin(x)/x یا log(x)):</label>
+<label>تابع (مثال: Math.sin(x)/x یا Math.log(x)):</label>
 <input type="text" id="func" placeholder="تابع خود را وارد کنید">
 
-<label>نقطه حد (مثال: 2، Infinity یا -Infinity):</label>
+<label>نقطه حد (مثال: 0 یا Infinity یا -Infinity):</label>
 <input type="text" id="point" placeholder="x → ">
 
-<button onclick="calculateLimitStep()">محاسبه حد گام به گام</button>
+<button onclick="calculateNumericLimit()">محاسبه حد</button>
 
 <div class="result" id="output"></div>
 
 <script>
-function calculateLimitStep() {
-    let f = document.getElementById("func").value.trim();
-    let x0 = document.getElementById("point").value.trim();
-    let output = document.getElementById("output");
+function calculateNumericLimit() {
+    const output = document.getElementById("output");
     output.innerHTML = "";
 
-    if(f === "" || x0 === "") {
+    const fStr = document.getElementById("func").value.trim();
+    let x0 = document.getElementById("point").value.trim();
+
+    if(fStr === "" || x0 === "") {
         output.innerHTML = "<span class='error'>لطفا همه ورودی‌ها را پر کنید.</span>";
         return;
     }
 
-    try {
-        // تبدیل Infinity و -Infinity
-        let point = x0.toLowerCase();
-        if(point === "infinity") x0 = "inf";
-        if(point === "-infinity") x0 = "-inf";
+    // تبدیل نقطه حد به عدد یا Infinity
+    if(x0.toLowerCase() === "infinity") x0 = Infinity;
+    else if(x0.toLowerCase() === "-infinity") x0 = -Infinity;
+    else x0 = parseFloat(x0);
 
-        // محاسبه حد چپ و راست
-        let left = Algebrite.run(`limit(${f}, x, ${x0}, -1)`);
-        let right = Algebrite.run(`limit(${f}, x, ${x0}, 1)`);
+    // تابع eval ایمن
+    const f = (x) => {
+        try {
+            return eval(fStr);
+        } catch(e) {
+            return NaN;
+        }
+    }
+
+    // گام عددی
+    const h = 1e-7;
+
+    let left, right;
+
+    try {
+        left = f(x0 - h);
+        right = f(x0 + h);
+
+        if(!isFinite(left)) left = left > 0 ? "∞" : "-∞";
+        if(!isFinite(right)) right = right > 0 ? "∞" : "-∞";
+
         let mainLimit = (left === right) ? left : "حد وجود ندارد";
 
-        // نمایش گام به گام
-        output.innerHTML += `<div class="step"><b>گام 1:</b> تابع وارد شده: f(x) = ${f}</div>`;
-        output.innerHTML += `<div class="step"><b>گام 2:</b> نقطه حد: x → ${document.getElementById("point").value}</div>`;
-        output.innerHTML += `<div class="step"><b>گام 3:</b> محاسبه حد چپ: lim(x→${document.getElementById("point").value}⁻) f(x) = ${left}</div>`;
-        output.innerHTML += `<div class="step"><b>گام 4:</b> محاسبه حد راست: lim(x→${document.getElementById("point").value}⁺) f(x) = ${right}</div>`;
-
-        if(left === right) {
-            output.innerHTML += `<div class="step"><b>گام 5:</b> حد اصلی برابر است با: ${mainLimit}</div>`;
-        } else {
-            output.innerHTML += `<div class="step"><b>گام 5:</b> حد اصلی وجود ندارد زیرا حد چپ و حد راست برابر نیستند.</div>`;
-        }
+        output.innerHTML += `<div class="step"><b>حد چپ:</b> ${left}</div>`;
+        output.innerHTML += `<div class="step"><b>حد راست:</b> ${right}</div>`;
+        output.innerHTML += `<div class="step"><b>حد اصلی:</b> ${mainLimit}</div>`;
 
     } catch(e) {
         output.innerHTML = "<span class='error'>خطا در محاسبه تابع. لطفا تابع را بررسی کنید.</span>";

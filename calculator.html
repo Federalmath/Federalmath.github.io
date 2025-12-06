@@ -2,83 +2,66 @@
 <html lang="fa">
 <head>
 <meta charset="UTF-8">
-<title>ماشین حساب گام به گام انتگرال</title>
+<title>محاسبه حد پیشرفته</title>
+<script src="https://unpkg.com/algebrite"></script>
 <style>
-    body { font-family: Tahoma, sans-serif; background: #f0f0f0; padding: 20px; }
-    .container { background: #fff; padding: 20px; border-radius: 12px; max-width: 600px; margin: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.2);}
-    input, select, button { padding: 8px; margin: 5px 0; width: 100%; border-radius: 6px; border: 1px solid #ccc;}
-    button { background: #4CAF50; color: white; border: none; cursor: pointer; }
-    button:hover { background: #45a049; }
-    .result { background: #e8f5e9; padding: 10px; border-radius: 8px; margin-top: 10px;}
-    .step { margin-bottom: 10px; }
+  body { font-family: Tahoma, sans-serif; margin: 40px; background: #f5f5f5; }
+  h2 { color: #333; }
+  input, select, button { padding: 8px; margin: 5px 0; width: 100%; font-size: 16px; }
+  button { background: #4CAF50; color: white; border: none; cursor: pointer; border-radius: 5px; }
+  button:hover { background: #45a049; }
+  .result { margin-top: 20px; padding: 15px; background: #fff; border-radius: 10px; box-shadow: 1px 1px 10px rgba(0,0,0,0.1); }
+  .error { color: red; font-weight: bold; }
 </style>
 </head>
 <body>
-<div class="container">
-<h2>ماشین حساب گام به گام انتگرال</h2>
 
-<label>تابع (مثال: x^2 + 3*x):</label>
-<input type="text" id="function" placeholder="f(x)">
+<h2>ماشین حساب حد پیشرفته</h2>
 
-<label>نوع انتگرال:</label>
-<select id="integralType">
-  <option value="indefinite">نامعین</option>
-  <option value="definite">معین</option>
-</select>
+<label>تابع (مثال: sin(x)/x یا log(x)):</label>
+<input type="text" id="func" placeholder="تابع خود را وارد کنید">
 
-<div id="limits" style="display:none;">
-  <label>حد پایین:</label>
-  <input type="text" id="lower">
-  <label>حد بالا:</label>
-  <input type="text" id="upper">
-</div>
+<label>نقطه حد (مثال: 2، Infinity یا -Infinity):</label>
+<input type="text" id="point" placeholder="x → ">
 
-<button id="calculateBtn">محاسبه گام به گام</button>
+<button onclick="calculateLimit()">محاسبه حد</button>
 
-<div id="result" class="result"></div>
-</div>
-
-<!-- اضافه کردن کتابخانه Algebrite -->
-<script src="https://cdn.jsdelivr.net/npm/algebrite@1.5.0/dist/algebrite.bundle-for-browser.min.js"></script>
+<div class="result" id="output"></div>
 
 <script>
-document.getElementById('integralType').addEventListener('change', function() {
-    document.getElementById('limits').style.display = this.value === 'definite' ? 'block' : 'none';
-});
+function calculateLimit() {
+    let f = document.getElementById("func").value.trim();
+    let x0 = document.getElementById("point").value.trim();
+    let output = document.getElementById("output");
 
-document.getElementById('calculateBtn').addEventListener('click', function() {
-    let func = document.getElementById('function').value;
-    let type = document.getElementById('integralType').value;
-    let lower = document.getElementById('lower').value;
-    let upper = document.getElementById('upper').value;
-    let resultDiv = document.getElementById('result');
-    resultDiv.innerHTML = '';
-
-    if (!func) { resultDiv.innerHTML = "لطفاً تابع را وارد کنید."; return; }
+    if(f === "" || x0 === "") {
+        output.innerHTML = "<span class='error'>لطفا همه ورودی‌ها را پر کنید.</span>";
+        return;
+    }
 
     try {
-        // گام 1: نمایش تابع ورودی
-        resultDiv.innerHTML += `<div class="step"><b>گام 1:</b> تابع وارد شده: ${func}</div>`;
+        // جایگزینی Infinity و -Infinity
+        let point = x0.toLowerCase();
+        if(point === "infinity") x0 = "inf";
+        if(point === "-infinity") x0 = "-inf";
 
-        // گام 2: ایجاد انتگرال
-        let integralExpr = `integral(${func}, x)`;
-        if (type === 'definite') {
-            if(lower === '' || upper === '') {
-                resultDiv.innerHTML += "لطفاً حدهای انتگرال را وارد کنید.";
-                return;
-            }
-            integralExpr = `integral(${func}, x, ${lower}, ${upper})`;
-        }
+        // حد چپ
+        let left = Algebrite.run(`limit(${f}, x, ${x0}, -1)`);
+        // حد راست
+        let right = Algebrite.run(`limit(${f}, x, ${x0}, 1)`);
+        // حد اصلی
+        let mainLimit = (left === right) ? left : "حد وجود ندارد";
 
-        resultDiv.innerHTML += `<div class="step"><b>گام 2:</b> فرم انتگرال: ${integralExpr}</div>`;
-
-        // گام 3: محاسبه با Algebrite
-        let integralResult = Algebrite.run(integralExpr);
-        resultDiv.innerHTML += `<div class="step"><b>گام 3:</b> نتیجه: ${integralResult}</div>`;
-    } catch(e) {
-        resultDiv.innerHTML = "خطا در محاسبه: " + e.message;
+        output.innerHTML = `
+            <b>حد چپ:</b> ${left} <br>
+            <b>حد راست:</b> ${right} <br>
+            <b>حد اصلی:</b> ${mainLimit}
+        `;
+    } catch (e) {
+        output.innerHTML = "<span class='error'>خطا در محاسبه تابع. لطفا تابع را بررسی کنید.</span>";
     }
-});
+}
 </script>
+
 </body>
 </html>

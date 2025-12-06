@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <title>محاسبه انتگرال گام‌به‌گام</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/algebrite/1.5.0/algebrite.min.js"></script>
+
+<!-- این فایل را باید دانلود و کنار همین HTML قرار بدهی -->
+<script src="algebrite.min.js"></script>
+
 <style>
     body { font-family: Tahoma, sans-serif; direction: rtl; padding: 20px; background: #f0f0f0; }
     input, button { padding: 10px; width: 320px; margin-top: 10px; font-size: 16px; }
@@ -16,7 +19,7 @@
 
 <h2>محاسبه انتگرال گام‌به‌گام</h2>
 
-<input id="inputExpr" placeholder="مثلاً x^2 یا sin(x) یا 1/(x+1)" />
+<input id="inputExpr" placeholder="مثلاً x^3 یا sin(x) یا 1/(x+1)" />
 <br>
 <input id="variable" placeholder="متغیر (مثلاً x)" />
 <br>
@@ -25,7 +28,6 @@
 <div id="result"></div>
 
 <script>
-
 // تشخیص نوع انتگرال
 function detectType(expr){
     if (/sin|cos|tan|cot|sec|csc/.test(expr)) return "مثلثاتی";
@@ -36,44 +38,35 @@ function detectType(expr){
     return "عمومی / ساده";
 }
 
+// تولید مراحل گام‌به‌گام
 function stepsFor(type, expr, variable){
     let s = [];
-
     s.push(`۱) تشخیص نوع انتگرال → ${type}`);
-
     switch(type){
         case "چندجمله‌ای (توانی)":
             s.push("۲) تبدیل به فرم x^n و افزایش توان به n+1");
             s.push("۳) تقسیم بر توان جدید (n+1)");
             break;
-
         case "مثلثاتی":
-            s.push("۲) استفاده از جدول انتگرال‌های مثلثاتی");
-            s.push("۳) اگر لازم بود تبدیل روابط مثل sin²(x) یا cos²(x)");
+            s.push("۲) استفاده از جدول انتگرال‌های مثلثاتی و جایگزینی‌ها");
             break;
-
         case "رادیکالی":
-            s.push("۲) تبدیل √ به توان کسری مانند x^(1/2)");
-            s.push("۳) اعمال قانون انتگرال توانی");
+            s.push("۲) تبدیل √ به توان کسری و استفاده از قانون انتگرال توانی");
             break;
-
         case "کسری":
-            s.push("۲) بررسی اگر قابل ساده‌سازی باشد");
-            s.push("۳) ممکن است از روش تجزیه به کسرهای جزئی استفاده شود");
+            s.push("۲) بررسی قابل ساده‌سازی بودن و تجزیه به کسرهای جزئی");
             break;
-
         case "لگاریتمی":
             s.push("۲) استفاده از فرمول ∫ ln(x) dx = x ln(x) - x");
             break;
-
         default:
             s.push("۲) انتگرال مستقیم با قوانین پایه");
     }
-
-    s.push("۴) اضافه کردن ثابت C");
+    s.push("۳) اضافه کردن ثابت C");
     return s;
 }
 
+// حل انتگرال
 function solveIntegral(){
     let expr = document.getElementById("inputExpr").value.trim();
     let variable = document.getElementById("variable").value.trim() || "x";
@@ -94,15 +87,13 @@ function solveIntegral(){
         // بررسی مشتق
         let derivative = Algebrite.derivative(result, variable).toString();
 
-        // ساخت خروجی
+        // نمایش خروجی
         let output = `<div class="step"><b>نوع انتگرال:</b> ${type}</div>`;
-        
-        output += `<div class="step"><b>مراحل گام‌به‌گام:</b><br>`;
+        output += `<div class="step"><b>مراحل گام به گام:</b><br>`;
         steps.forEach(s => output += "• " + s + "<br>");
-        output += "</div>";
-
+        output += `</div>`;
         output += `<div class="step"><b>جواب نهایی:</b> ${result} + C</div>`;
-        output += `<div class="step"><b>بررسی با مشتق:</b> d/d${variable}(${result}) = ${derivative}</div>`;
+        output += `<div class="step"><b>بررسی صحت با مشتق:</b> d/d${variable}(${result}) = ${derivative}</div>`;
 
         r.innerHTML = output;
 
@@ -110,7 +101,6 @@ function solveIntegral(){
         r.innerHTML = "خطا در محاسبه: " + e;
     }
 }
-
 </script>
 
 </body>
